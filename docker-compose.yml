@@ -1,0 +1,16 @@
+services:
+  plex-cleaner:
+    build: .
+    container_name: plex-cleaner
+    env_file: .env
+    ports:
+      - "8090:8080"
+    environment:
+      TZ: ${TZ:-UTC}
+    volumes:
+      # DATA_DIR must be writable by uid 1000 (the container user)
+      - ${DATA_DIR:-./appdata}/config:/config
+      - ${DATA_DIR:-./appdata}/data:/data
+      - ${DATA_DIR:-./appdata}/logs:/logs
+      - ${DATA_DIR:-./appdata}/reports:/reports
+    restart: unless-stopped

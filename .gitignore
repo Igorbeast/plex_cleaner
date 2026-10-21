@@ -1,0 +1,10 @@
+.env
+appdata/
+data/
+logs/
+reports/
+.venv/
+__pycache__/
+*.pyc
+*.bak
+*.before-*

@@ -1,0 +1,25 @@
+# Copy to ${DATA_DIR}/config/config.yaml  (default: ./appdata/config/config.yaml)
+# API keys/tokens are best kept in .env (PLEX_TOKEN, RADARR_API_KEY, SONARR_API_KEY, SEERR_API_KEY).
+
+general:
+  dry_run: true          # true = nothing can be deleted. Set to false only when you want to clean up.
+  log_level: INFO
+
+libraries:               # names of your Plex libraries
+  - Movies
+  - TV Shows
+
+retention:
+  fully_watched_min_days_since_watch: 90   # watched + not viewed for this long -> candidate
+  never_watched_min_age_days: 90           # never watched: shown for information only, never deletable
+
+services:
+  plex:
+    url: "http://PLEX_HOST:32400"
+  radarr:
+    url: "http://RADARR_HOST:7878"
+  sonarr:
+    url: "http://SONARR_HOST:8989"
+  seerr:                 # optional: cleans up the request after a deletion
+    url: "http://SEERR_HOST:5055"
+    required: false
