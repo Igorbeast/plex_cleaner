@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plex Cleaner - Geschiedenis</title>
+
+    <style>
+        :root {
+            --bg-main: #0f1117;
+            --bg-card: #161922;
+            --accent-orange: #e5a00d;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #262b3d;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .header-brand span {
+            color: var(--accent-orange);
+        }
+
+        .nav-tabs-custom {
+            display: flex;
+            gap: 10px;
+            background-color: var(--bg-card);
+            padding: 8px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .nav-link-custom {
+            color: var(--text-muted);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link-custom.active,
+        .nav-link-custom:hover {
+            background-color: var(--accent-orange);
+            color: #000;
+            font-weight: 600;
+        }
+
+        .content-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .muted {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            text-align: left;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 14px 10px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+        }
+
+        .badge-approved {
+            background: #14532d;
+            color: #bbf7d0;
+        }
+
+        .badge-excluded {
+            background: #7f1d1d;
+            color: #fecaca;
+        }
+
+        .empty {
+            color: var(--text-muted);
+            padding-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="dashboard-container">
+
+    <div class="header-brand">
+        plex <span>Cleaner</span>
+    </div>
+
+    <nav class="nav-tabs-custom">
+        <a href="{{ url_for('dashboard') }}" class="nav-link-custom">
+            📂 Dashboard
+        </a>
+
+        <a href="{{ url_for('candidates') }}" class="nav-link-custom">
+            📄 Kandidaten
+        </a>
+
+        <a href="{{ url_for('history') }}" class="nav-link-custom active">
+            ⏱️ Geschiedenis
+        </a>
+
+        <a href="{{ url_for('health') }}" class="nav-link-custom">
+            🛡️ Health Status
+        </a>
+        <a href="{{ url_for('logs') }}" class="nav-link-custom">📜 Logs</a>
+<a href="/logout" class="nav-link-custom">🚪 Uitloggen</a>
+    </nav>
+
+
+    <div class="content-card">
+
+        <h2 style="margin-top: 0;">
+            Beslissingen
+        </h2>
+
+        <p class="muted">
+            Hier staan goedgekeurde kandidaten en andere geregistreerde
+            beslissingen.
+        </p>
+
+        {% if decision_rows %}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Titel</th>
+                    <th>Actie</th>
+                    <th>Datum</th>
+                    <th>Plex ID</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for row in decision_rows %}
+                <tr>
+                    <td>
+                        <strong>{{ row.title }}</strong>
+                    </td>
+
+                    <td>
+                        {% if row.action == "approved" %}
+                            <span class="badge badge-approved">
+                                Goedgekeurd
+                            </span>
+                        {% else %}
+                            {{ row.action }}
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {{ row.at }}
+                    </td>
+
+                    <td>
+                        {{ row.rating_key }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        {% else %}
+
+        <p class="empty">
+            Nog geen beslissingen geregistreerd.
+        </p>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="content-card">
+
+        <h2 style="margin-top: 0;">
+            Nooit voorstellen
+        </h2>
+
+        <p class="muted">
+            Content die je hebt uitgesloten van toekomstige voorstellen.
+        </p>
+
+        {% if exclude_rows %}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Titel</th>
+                    <th>Datum</th>
+                    <th>Plex ID</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for row in exclude_rows %}
+                <tr>
+                    <td>
+                        <strong>{{ row.title }}</strong>
+                    </td>
+
+                    <td>
+                        {{ row.at }}
+                    </td>
+
+                    <td>
+                        {{ row.rating_key }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        {% else %}
+
+        <p class="empty">
+            Nog geen uitgesloten content.
+        </p>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

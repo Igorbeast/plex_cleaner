@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plex Cleaner - Health Status</title>
+    <style>
+      :root {
+        --bg-main: #0f1117;
+        --bg-card: #161922;
+        --accent-orange: #e5a00d;
+        --text-main: #f3f4f6;
+        --text-muted: #9ca3af;
+        --border-color: #262b3d;
+      }
+
+      body {
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        margin: 0;
+        padding: 20px;
+      }
+
+      .dashboard-container { max-width: 1400px; margin: 0 auto; }
+      .header-brand { display: flex; align-items: center; gap: 12px; font-size: 1.5rem; font-weight: 700; margin-bottom: 20px; color: #fff; }
+      .header-brand span { color: var(--accent-orange); }
+
+      .nav-tabs-custom {
+        display: flex;
+        gap: 10px;
+        background-color: var(--bg-card);
+        padding: 8px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 24px;
+      }
+
+      .nav-link-custom {
+        color: var(--text-muted);
+        background: transparent;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .nav-link-custom.active, .nav-link-custom:hover {
+        background-color: var(--accent-orange);
+        color: #000;
+        font-weight: 600;
+      }
+
+      .content-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 24px;
+      }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+  <div class="header-brand">plex <span>Cleaner</span></div>
+
+  <nav class="nav-tabs-custom">
+    <a href="{{ url_for('dashboard') }}" class="nav-link-custom">📂 Dashboard</a>
+    <a href="{{ url_for('candidates') }}" class="nav-link-custom">📄 Kandidaten</a>
+    <a href="{{ url_for('history') }}" class="nav-link-custom">⏱️ Geschiedenis</a>
+    <a href="{{ url_for('health') }}" class="nav-link-custom active">🛡️ Health Status</a>
+        <a href="{{ url_for('logs') }}" class="nav-link-custom">📜 Logs</a>
+<a href="/logout" class="nav-link-custom">🚪 Uitloggen</a>
+  </nav>
+
+  <div class="content-card">
+    <h2 style="margin-top: 0; font-size: 1.3rem;">Systeem Gezondheid & Verbindingen</h2>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">
+      Diagnose en status van de verbinding met Plex, Tautulli, Sonarr, Radarr en Seerr.
+    </p>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+      <tr style="color: var(--text-muted); text-align: left; font-size: 0.85rem;">
+        <th style="padding: 8px;">Service</th>
+        <th style="padding: 8px;">Status</th>
+        <th style="padding: 8px;">Detail</th>
+      </tr>
+      {% for s in statuses %}
+      <tr style="border-top: 1px solid var(--border-color);">
+        <td style="padding: 8px; font-weight: 600;">{{ s.name }}</td>
+        <td style="padding: 8px;">
+          {% if s.online %}
+            <span style="color: #22c55e; font-weight: 600;">● Online</span>
+          {% else %}
+            <span style="color: #ef4444; font-weight: 600;">● Offline</span>
+          {% endif %}
+        </td>
+        <td style="padding: 8px; color: var(--text-muted); font-size: 0.85rem;">{{ s.message }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+</body>
+</html>

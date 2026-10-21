@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plex Cleaner - Kandidaten</title>
+    <style>
+        :root {
+            --bg-main: #0f1117;
+            --bg-card: #161922;
+            --accent-orange: #e5a00d;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #262b3d;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .header-brand span {
+            color: var(--accent-orange);
+        }
+
+        .nav-tabs-custom {
+            display: flex;
+            gap: 10px;
+            background-color: var(--bg-card);
+            padding: 8px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .nav-link-custom {
+            color: var(--text-muted);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link-custom.active,
+        .nav-link-custom:hover {
+            background-color: var(--accent-orange);
+            color: #000;
+            font-weight: 600;
+        }
+
+        .content-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .status {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .status.safe {
+            color: #86efac;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            text-align: left;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 14px 10px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            vertical-align: top;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+
+        .badge-library {
+            background: #2a2f42;
+            color: var(--text-main);
+        }
+
+        .badge-info {
+            background: #2a2f42;
+            color: var(--text-main);
+        }
+
+        .badge-deletable {
+            background: #14532d;
+            color: #bbf7d0;
+        }
+
+        .badge-decided {
+            background: #78350f;
+            color: #fde68a;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: 0;
+            padding: 7px 12px;
+            border-radius: 7px;
+            cursor: pointer;
+            color: #fff;
+            background: #2a2f42;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button.approve {
+            background: #166534;
+        }
+
+        .inline {
+            display: inline;
+        }
+
+        .empty {
+            color: var(--text-muted);
+            padding: 25px 10px;
+        }
+
+        .error {
+            color: #fca5a5;
+            margin: 6px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <div class="header-brand">
+        plex <span>Cleaner</span>
+    </div>
+
+    <nav class="nav-tabs-custom">
+        <a href="{{ url_for('dashboard') }}" class="nav-link-custom">📂 Dashboard</a>
+        <a href="{{ url_for('candidates') }}" class="nav-link-custom active">📄 Kandidaten</a>
+        <a href="{{ url_for('history') }}" class="nav-link-custom">⏱️ Geschiedenis</a>
+        <a href="{{ url_for('health') }}" class="nav-link-custom">🛡️ Health Status</a>
+        <a href="{{ url_for('logs') }}" class="nav-link-custom">📜 Logs</a>
+<a href="/logout" class="nav-link-custom">🚪 Uitloggen</a>
+    </nav>
+
+    <div class="content-card">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <p class="status {{ 'safe' if category == 'success' else 'error' }}">
+                {{ '✅' if category == 'success' else '⚠️' }} {{ message }}
+              </p>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+
+
+        <h2 style="margin-top: 0;">Kandidaten voor opruiming</h2>
+
+        {% if dry_run %}
+            <p class="status safe">● DRY-RUN — er wordt nooit automatisch iets verwijderd</p>
+        {% else %}
+            <p class="status">● Live-modus</p>
+        {% endif %}
+
+        <p class="status">
+            Totaal aantal kandidaten: <strong>{{ total_count }}</strong>
+        </p>
+
+        <p class="status">
+            Alleen <span class="badge badge-deletable">verwijderbaar</span>
+            content kan worden goedgekeurd.
+            <span class="badge badge-info">alleen info</span>
+            (nooit bekeken) is nooit verwijderbaar.
+        </p>
+
+        {% if errors %}
+            {% for error in errors %}
+                <p class="error">⚠️ {{ error }}</p>
+            {% endfor %}
+        {% endif %}
+
+        {% if results %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Bibliotheek</th>
+                    <th>Titel</th>
+                    <th>Reden</th>
+                    <th>Arr-koppeling</th>
+                    <th>Status</th>
+                    <th>Actie</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for row in results %}
+                <tr>
+                    <td>
+                        <span class="badge badge-library">
+                            {{ row.library }}
+                        </span>
+                    </td>
+
+                    <td>
+                        <strong>{{ row.candidate.title }}</strong>
+                    </td>
+
+                    <td>
+                        {{ row.candidate.reason }}
+                    </td>
+
+                    <td>
+                        {% if row.arr_match %}
+                            {% if row.candidate.type == "movie" %}
+                                <span class="badge badge-info">
+                                    Radarr: {{ row.arr_match.title }}
+                                </span>
+                            {% elif row.candidate.type == "show" %}
+                                <span class="badge badge-info">
+                                    Sonarr: {{ row.arr_match.title }}
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge badge-info">
+                                Niet gekoppeld
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if row.candidate.deletable %}
+                            <span class="badge badge-deletable">
+                                verwijderbaar
+                            </span>
+                        {% else %}
+                            <span class="badge badge-info">
+                                alleen info
+                            </span>
+                        {% endif %}
+
+                        {% if row.decision == "approved" %}
+                            <span class="badge badge-decided">
+                                goedgekeurd
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <div class="actions">
+
+                            <form class="inline"
+                                  action="{{ url_for('exclude', rating_key=row.candidate.rating_key) }}"
+                                  method="post">
+                                <input type="hidden"
+                                       name="title"
+                                       value="{{ row.candidate.title }}">
+                                <button type="submit">
+                                    🚫 Nooit voorstellen
+                                </button>
+                            </form>
+
+                            <form class="inline" action="{{ url_for('snooze', rating_key=row.candidate.rating_key) }}" method="post">
+                                <input type="hidden" name="title" value="{{ row.candidate.title }}">
+                                <button type="submit">💤 90 dagen uitstellen</button>
+                            </form>
+
+                            {% if row.candidate.deletable and row.decision != "approved" %}
+                            <form class="inline"
+                                  action="{{ url_for('approve', rating_key=row.candidate.rating_key) }}"
+                                  method="post">
+                                <input type="hidden" name="title" value="{{ row.candidate.title }}">
+                                <button type="submit" class="approve">
+                                    ✅ Goedkeuren
+                                </button>
+                            </form>
+                            {% endif %}
+
+                            {% if row.decision == "approved" %}
+                                {% if dry_run %}
+                                    <span class="badge badge-info">DRY-RUN actief — verwijderen uitgeschakeld</span>
+                                {% elif row.arr_match %}
+                                    <form class="inline"
+                                          action="{{ url_for('delete_now', rating_key=row.candidate.rating_key) }}"
+                                          method="post"
+                                          onsubmit="return confirm('Weet je zeker dat je \'' + {{ row.candidate.title|tojson }} + '\' definitief wilt verwijderen via ' + ({{ (row.candidate.type == 'movie')|tojson }} ? 'Radarr' : 'Sonarr') + '?');">
+                                        <input type="hidden" name="title" value="{{ row.candidate.title }}">
+                                        <input type="hidden" name="media_type" value="{{ row.candidate.type }}">
+                                        <input type="hidden" name="arr_id" value="{{ row.arr_match.id }}">
+                                        <button type="submit" style="background: #7f1d1d;">
+                                            🗑️ Nu verwijderen
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="badge badge-info">Geen Radarr/Sonarr-koppeling</span>
+                                {% endif %}
+                            {% endif %}
+
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        {% else %}
+            <p class="empty">Geen kandidaten gevonden.</p>
+        {% endif %}
+
+    </div>
+</div>
+
+</body>
+</html>
